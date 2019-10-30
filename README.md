@@ -7,4 +7,4 @@ The following list is in descending order of completion; most recent projects ar
 <a href="Week1/Intro">Intro</a>.
 
 ## Week 2
-<a href="Week1/InputAndControl">InputAndControl</a>.
+<a href="Week2/InputAndControl">InputAndControl</a>.
