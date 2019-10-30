@@ -15,14 +15,14 @@ void main()
 	/**** Set up your scene here ****/
 
 	// Create mesh and model objects.
-	IMesh* cubeMesh;
-	IModel* cube;
+	IMesh* arrowMesh;
+	IModel* arrow;
 
 	// Set meshes.
-	cubeMesh = myEngine->LoadMesh("Cube.x");
+	arrowMesh = myEngine->LoadMesh("Arrow.x");
 
 	// Create models.
-	cube = cubeMesh->CreateModel();
+	arrow = arrowMesh->CreateModel();
 
 	// Create FPS-Style camera.
 	ICamera* myCamera;
@@ -48,37 +48,47 @@ void main()
 		{
 			myEngine->Stop();
 		}
-		// Move the cube with WASDQE keys. 
-		// The movement is relative to the screen at 0,0,0 not the camera.
+		// Move the arrow with WASDQE keys. 
+		// The movement is relative to arrow.
 		if (myEngine->KeyHeld(Key_W))
 		{
-			// Move cube into the screen.
-			cube->MoveZ(moveSpeed);
+			// Move arrow into the screen.
+			arrow->MoveLocalZ(moveSpeed);
 		}
 		if (myEngine->KeyHeld(Key_S))
 		{
-			// Move cube away from the screen.
-			cube->MoveZ(-moveSpeed);
+			// Move arrow away from the screen.
+			arrow->MoveLocalZ(-moveSpeed);
 		}
 		if (myEngine->KeyHeld(Key_A))
 		{
-			// Move cube left.
-			cube->MoveX(-moveSpeed);
+			// Move arrow left.
+			arrow->MoveLocalX(-moveSpeed);
 		}
 		if (myEngine->KeyHeld(Key_D))
 		{
-			// Move cube right.
-			cube->MoveX(moveSpeed);
+			// Move arrow right.
+			arrow->MoveLocalX(moveSpeed);
 		}
 		if (myEngine->KeyHeld(Key_Q))
 		{
-			// Move cube up.
-			cube->MoveY(moveSpeed);
+			// Move arrow up.
+			arrow->MoveLocalY(moveSpeed);
 		}
 		if (myEngine->KeyHeld(Key_E))
 		{
-			// Move cube down.
-			cube->MoveY(-moveSpeed);
+			// Move arrow down.
+			arrow->MoveLocalY(-moveSpeed);
+		}
+		if (myEngine->KeyHeld(Key_Z))
+		{
+			// Rotate arrow left.
+			arrow->RotateLocalY(-moveSpeed);
+		}
+		if (myEngine->KeyHeld(Key_X))
+		{
+			// Rotate arrow right.
+			arrow->RotateLocalY(moveSpeed);
 		}
 	}
 
