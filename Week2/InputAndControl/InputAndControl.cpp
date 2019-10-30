@@ -34,6 +34,7 @@ void main()
 
 	// Define variables.
 	const double moveSpeed = 0.05;
+	const double speedMultiplier = 8.0;
 
 	// Define cube direction.
 	string cubeDirection = "left";
@@ -71,10 +72,12 @@ void main()
 			if (cubeDirection == "left")
 			{
 				cube->MoveX(-moveSpeed);
+				cube->RotateZ(moveSpeed * speedMultiplier);
 			}
 			else
 			{
 				cube->MoveX(moveSpeed);
+				cube->RotateZ(-moveSpeed * speedMultiplier);
 			}
 
 			// Keyboard control.
@@ -84,7 +87,7 @@ void main()
 				myEngine->Stop();
 			}
 
-			// Pause game.
+			// Toggle isPaused.
 			if (myEngine->KeyHit(Key_P))
 			{
 				isPaused = !isPaused;
@@ -149,7 +152,7 @@ void main()
 		}
 		else
 		{
-			// Pause game.
+			// Toggle isPaused.
 			if (myEngine->KeyHit(Key_P))
 			{
 				isPaused = !isPaused;
