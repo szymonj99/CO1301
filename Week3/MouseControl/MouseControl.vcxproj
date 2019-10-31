@@ -12,7 +12,7 @@
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{09E3BFC2-BE9D-42C6-AD13-08A2F474390E}</ProjectGuid>
-    <RootNamespace>InputAndControl</RootNamespace>
+    <RootNamespace>MouseControl</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -79,7 +79,7 @@
     <Link>
       <AdditionalLibraryDirectories>C:\Programs\TL-Engine\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <ProgramDatabaseFile>$(OutDir)InputAndControl.pdb</ProgramDatabaseFile>
+      <ProgramDatabaseFile>$(OutDir)MouseControl.pdb</ProgramDatabaseFile>
       <DataExecutionPrevention>
       </DataExecutionPrevention>
       <OutputFile>$(SolutionDir)$(TargetName)$(TargetExt)</OutputFile>
@@ -125,7 +125,7 @@ copy "C:\Programs\TL-Engine\3rd Party\TL-Xtreme\shader\*.*" "$(OutDir)" &gt; NUL
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="InputAndControl.cpp" />
+    <ClCompile Include="MouseControl.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="TLEngine Readme.txt" />

@@ -128,7 +128,7 @@ copy "C:\Programs\TL-Engine\3rd Party\TL-Xtreme\shader\*.*" "$(OutDir)" &gt; NUL
     <ClCompile Include="Intro.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="ReadMe.txt" />
+    <None Include="TLEngine Readme.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
