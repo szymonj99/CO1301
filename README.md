@@ -13,3 +13,6 @@ The following list is in descending order of completion; most recent projects ar
 <a href="Week3/MouseControl">MouseControl</a>.
 
 <a href="Week3/Camerawork">Camerawork</a>.
+
+## Week 4
+<a href="Week4/TextureManipulation">TextureManipulation</a>.
