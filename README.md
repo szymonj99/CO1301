@@ -16,3 +16,7 @@ The following list is in descending order of completion; most recent projects ar
 
 ## Week 4
 <a href="Week4/TextureManipulation">TextureManipulation</a>.
+
+# How to compile?
+After cloning a project, change "myEngine->AddMediaFolder( "C:\\Programs\\TL-Engine\\Media" );" to a path that reflects your TLEngine installation folder.
+Open the solution in Visual Studio 2019, and build.
