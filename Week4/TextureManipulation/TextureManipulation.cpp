@@ -24,7 +24,7 @@ std::chrono::system_clock::time_point timePointB = std::chrono::system_clock::no
 
 // Create some constants
 const float kCameraSpeed = 0.05f;
-const float kCameraRotation = 0.05f;
+const float kCameraRotation = 0.1f;
 const int minX = -40;
 const int maxX = 40;
 const float moveSpeed = 0.05;
@@ -83,7 +83,7 @@ void main()
 	grid = gridMesh->CreateModel();
 
 	// Create camera
-	const ICamera* myCamera = myEngine->CreateCamera(kFPS);
+	ICamera* myCamera = myEngine->CreateCamera(kManual);
 
 	// Change sphere texture
 	sphere->SetSkin("EarthPlain.jpg");
@@ -107,19 +107,24 @@ void main()
 	// The main game loop, repeat until engine is stopped
 	while (myEngine->IsRunning())
 	{
+		// Try and fix messed up camera
+		// Rotate camera based on mouse input
+		myCamera->RotateLocalY(myEngine->GetMouseMovementX() * kCameraRotation);
+		myCamera->RotateLocalX(myEngine->GetMouseMovementY() * kCameraRotation);
+
 		// START OF FPS LIMITER CODE ///////////////////////////////////
 		timePointA = std::chrono::system_clock::now();
-		std::chrono::duration<double, std::milli> work_time = timePointA - timePointB;
+		std::chrono::duration<double, std::milli> const work_time = timePointA - timePointB;
 
 		if (work_time.count() < frameTime)
 		{
-			std::chrono::duration<double, std::milli> delta_ms(frameTime - work_time.count());
+			std::chrono::duration<double, std::milli> const delta_ms(frameTime - work_time.count());
 			auto delta_ms_duration = std::chrono::duration_cast<std::chrono::milliseconds>(delta_ms);
 			std::this_thread::sleep_for(std::chrono::milliseconds(delta_ms_duration.count()));
 		}
 
 		timePointB = std::chrono::system_clock::now();
-		std::chrono::duration<double, std::milli> sleep_time = timePointB - timePointA;
+		std::chrono::duration<double, std::milli> const sleep_time = timePointB - timePointA;
 		// END OF FPS LIMITER CODE ///////////////////////////////////
 
 		if (!isPaused)
