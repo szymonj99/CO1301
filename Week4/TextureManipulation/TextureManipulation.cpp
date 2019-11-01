@@ -1,7 +1,26 @@
 // TextureManipulation.cpp: A program using the TL-Engine
 
+////////////////////////////////////////////////////////////////
+//	FPS LIMITER CODE PROVIDED BY:
+//	How to limit FPS in a loop with C++?,
+//	Irongrave, HolyBlackCat, (2016).
+//	How to limit FPS in a loop with C++?.
+//	[online] Stack Overflow. Available at: https://stackoverflow.com/questions/38730273/how-to-limit-fps-in-a-loop-with-c
+//	[Accessed 1 Nov. 2019].
+////////////////////////////////////////////////////////////////
+
 #include <TL-Engine.h>	// TL-Engine include file and namespace
-using namespace tle;
+#include <iostream> // Used to limit the engine to X FPS
+#include <cstdio> // Used to limit the engine to X FPS
+#include <chrono> // Used to limit the engine to X FPS
+#include <thread> // Used to limit the engine to X FPS
+#include <math.h> // Used to round numbers up for FPS limiting.
+
+using namespace tle; // TL Engine namespace
+
+// Create variables used to limit FPS.
+std::chrono::system_clock::time_point timePointA = std::chrono::system_clock::now();
+std::chrono::system_clock::time_point timePointB = std::chrono::system_clock::now();
 
 // Create some constants
 const float kCameraSpeed = 0.05f;
@@ -11,6 +30,11 @@ const int maxX = 40;
 const float moveSpeed = 0.05;
 const float rotationSpeed = 0.05;
 const int speedMultiplier = 4;
+// START OF FPS LIMITER CONSTANTS
+const double desiredFPS = 60.0;
+const double milliseconds = 1000.0;
+const double frameTime = milliseconds / desiredFPS;
+// END OF FPS LIMITER CONSTANTS
 
 // Get the sphere texture based on whether or not it's cloudy.
 string GetSphereTexture(bool isCloudy)
@@ -83,8 +107,20 @@ void main()
 	// The main game loop, repeat until engine is stopped
 	while (myEngine->IsRunning())
 	{
-		// As the computer we are running this on is too fast for TLEngine, we add delay.
-		for (int delay = 0; delay < 1000000; delay++) { /* empty body */ }
+		// START OF FPS LIMITER CODE ///////////////////////////////////
+		timePointA = std::chrono::system_clock::now();
+		std::chrono::duration<double, std::milli> work_time = timePointA - timePointB;
+
+		if (work_time.count() < frameTime)
+		{
+			std::chrono::duration<double, std::milli> delta_ms(frameTime - work_time.count());
+			auto delta_ms_duration = std::chrono::duration_cast<std::chrono::milliseconds>(delta_ms);
+			std::this_thread::sleep_for(std::chrono::milliseconds(delta_ms_duration.count()));
+		}
+
+		timePointB = std::chrono::system_clock::now();
+		std::chrono::duration<double, std::milli> sleep_time = timePointB - timePointA;
+		// END OF FPS LIMITER CODE ///////////////////////////////////
 
 		if (!isPaused)
 		{
