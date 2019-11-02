@@ -9,10 +9,6 @@
 #include <Windows.h> // Used to get device refresh rate.
 using namespace tle; // TLEngine namespace
 
-// Create variables used to limit FPS.
-std::chrono::system_clock::time_point timePointA = std::chrono::system_clock::now();
-std::chrono::system_clock::time_point timePointB = std::chrono::system_clock::now();
-
 // START OF FPS LIMITER CONSTANTS
 const double desiredFPS = GetDeviceCaps(GetDC(nullptr), VREFRESH); // Get the screen's refresh rate. Using nullptr gets the refreshrate of the main display.
 const double milliseconds = 1000.0;
@@ -20,46 +16,60 @@ const double frameTime = milliseconds / desiredFPS;
 // END OF FPS LIMITER CONSTANTS
 
 // Create some constants
-const float moveSpeed = 0.20;
+const float moveSpeed = 0.15;
+const float acceleration = 0.001;
 const int initialSpeedMultiplier = 480;
-const int speedMultiplier = initialSpeedMultiplier / desiredFPS;
+const float speedMultiplier = initialSpeedMultiplier / desiredFPS;
+
+// Create global variable for plane speed.
+float planeSpeed = 0.0;
 
 // Function to move object with WASDQEZX keys.
-void MoveObject(I3DEngine* myEngine, IModel* object)
+void ControlObject(I3DEngine* myEngine, IModel* object)
 {
 	// The movement is relative.
 	if (myEngine->KeyHeld(Key_W))
 	{
-		// Move object into the screen.
-		object->MoveLocalZ(moveSpeed * speedMultiplier);
+		// Increase object speed.
+		planeSpeed += acceleration * speedMultiplier;
 	}
 	if (myEngine->KeyHeld(Key_S))
 	{
-		// Move object away from the screen.
-		object->MoveLocalZ(-moveSpeed * speedMultiplier);
+		// Slow object down if speed > 0
+		if (planeSpeed > 0)
+		{
+			planeSpeed -= acceleration * speedMultiplier;
+		}
 	}
 	if (myEngine->KeyHeld(Key_A))
 	{
 		// Rotate object left.
-		object->RotateLocalZ(moveSpeed * speedMultiplier);
+		object->RotateLocalY(-moveSpeed * speedMultiplier);
 	}
 	if (myEngine->KeyHeld(Key_D))
 	{
 		// Rotate object right.
-		object->RotateLocalZ(-moveSpeed * speedMultiplier);
+		object->RotateLocalY(moveSpeed * speedMultiplier);
 	}
-	if (myEngine->KeyHeld(Key_Up))
+	if (myEngine->KeyHeld(Key_Q))
 	{
 		// Rotate object up.
-		object->RotateLocalX(-moveSpeed * speedMultiplier);
+		object->RotateLocalX(moveSpeed * speedMultiplier);
 	}
-	if (myEngine->KeyHeld(Key_Down))
+	if (myEngine->KeyHeld(Key_E))
 	{
 		// Rotate object down.
-		object->RotateLocalX(moveSpeed * speedMultiplier);
+		object->RotateLocalX(-moveSpeed * speedMultiplier);
 	}
 }
 
+// Move the object based on the speed.
+void MoveObject(I3DEngine* myEngine, IModel* airplane)
+{
+	airplane->MoveLocalZ(planeSpeed);
+}
+
+// Entry point of the program.
 void main()
 {
 	// Create a 3D engine (using TLX engine here) and open a window for it
@@ -75,18 +85,18 @@ void main()
 
 	// Load "Comic Sans MS" font at 36 points
 	IFont* myFont = myEngine->LoadFont("Comic Sans MS", 36);
-
+	
 	// Create mesh and model objects
 	IMesh* airplaneMesh = myEngine->LoadMesh("Arrow.x"); // Change to airplane when I get the mesh.
 	IMesh* gridMesh = myEngine->LoadMesh("Grid.x");
 
 	// Create model from mesh
-	IModel* airplane = airplaneMesh->CreateModel(0, 10, 0);
+	IModel* airplaneModel = airplaneMesh->CreateModel(0, 10, 0);
 	IModel* grid = gridMesh->CreateModel();
 
 	// Create camera and attach to arrow.
 	ICamera* myCamera = myEngine->CreateCamera(kManual);
-	myCamera->AttachToParent(airplane);
+	myCamera->AttachToParent(airplaneModel);
 
 	// Define is the game paused.
 	bool isPaused = false;
@@ -97,6 +107,10 @@ void main()
 
 	// Define amount of frames since engine started.
 	int totalFrames = 0;
+
+	// Create variables used to limit FPS.
+	std::chrono::system_clock::time_point timePointA = std::chrono::system_clock::now();
+	std::chrono::system_clock::time_point timePointB = std::chrono::system_clock::now();
 
 	// The main game loop, repeat until engine is stopped
 	while (myEngine->IsRunning())
@@ -127,7 +141,11 @@ void main()
 			// Increment totalFrames
 			totalFrames++;
 			//Print totalFrames on screen.
-			myFont->Draw(to_string(totalFrames), 0, 0);
+			myFont->Draw("Frames:", 0, 0);
+			myFont->Draw(to_string(totalFrames), 110, 0);
+			// Print the plane's speed on screen.
+			myFont->Draw("Speed:", 0, 50);
+			myFont->Draw(to_string(planeSpeed), 110, 50);
 
 			/**** Update your scene each frame here ****/
 
@@ -156,7 +174,8 @@ void main()
 				isMouseCaptured = !isMouseCaptured;
 			}
 			// Move the object with keyboard.
-			MoveObject(myEngine, airplane);
+			ControlObject(myEngine, airplaneModel);
+			MoveObject(myEngine, airplaneModel);
 		}
 		else
 		{
