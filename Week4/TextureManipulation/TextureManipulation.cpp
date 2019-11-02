@@ -15,6 +15,7 @@
 #include <chrono> // Used to limit the engine to X FPS
 #include <thread> // Used to limit the engine to X FPS
 #include <math.h> // Used to round numbers up for FPS limiting.
+#include <Windows.h> // Used to get device refresh rate.
 
 using namespace tle; // TL Engine namespace
 
@@ -22,19 +23,21 @@ using namespace tle; // TL Engine namespace
 std::chrono::system_clock::time_point timePointA = std::chrono::system_clock::now();
 std::chrono::system_clock::time_point timePointB = std::chrono::system_clock::now();
 
+// START OF FPS LIMITER CONSTANTS
+const double desiredFPS = GetDeviceCaps(GetDC(NULL), VREFRESH); // Get the screen's refresh rate.
+const double milliseconds = 1000.0;
+const double frameTime = milliseconds / desiredFPS;
+// END OF FPS LIMITER CONSTANTS
+
 // Create some constants
 const float kCameraSpeed = 0.05f;
 const float kCameraRotation = 0.1f;
 const int minX = -40;
 const int maxX = 40;
 const float moveSpeed = 0.05;
-const float rotationSpeed = 0.05;
-const int speedMultiplier = 4;
-// START OF FPS LIMITER CONSTANTS
-const double desiredFPS = 60.0;
-const double milliseconds = 1000.0;
-const double frameTime = milliseconds / desiredFPS;
-// END OF FPS LIMITER CONSTANTS
+const float rotationSpeed = 0.075;
+const int initialSpeedMultiplier = 240;
+const int speedMultiplier = initialSpeedMultiplier / desiredFPS;
 
 // Get the sphere texture based on whether or not it's cloudy.
 string GetSphereTexture(bool isCloudy)
@@ -54,7 +57,7 @@ string GetSphereTexture(bool isCloudy)
 }
 
 void main()
-{
+{	
 	// Create a 3D engine (using TLX engine here) and open a window for it
 	I3DEngine* myEngine = New3DEngine( kTLX );
 	myEngine->StartWindowed();
@@ -113,18 +116,21 @@ void main()
 		myCamera->RotateLocalX(myEngine->GetMouseMovementY() * kCameraRotation);
 
 		// START OF FPS LIMITER CODE ///////////////////////////////////
+		// Set the timePointA to the time right now
 		timePointA = std::chrono::system_clock::now();
-		std::chrono::duration<double, std::milli> const work_time = timePointA - timePointB;
+		// Create a work_time double of type duration, measured in milliseconds (double data type), and set it to the time difference between timePointA and timePointB.
+		std::chrono::duration<double, std::milli> work_time = timePointA - timePointB;
 
 		if (work_time.count() < frameTime)
 		{
-			std::chrono::duration<double, std::milli> const delta_ms(frameTime - work_time.count());
+			// Set the delta_ms duration
+			std::chrono::duration<double, std::milli> delta_ms(frameTime - work_time.count());
 			auto delta_ms_duration = std::chrono::duration_cast<std::chrono::milliseconds>(delta_ms);
 			std::this_thread::sleep_for(std::chrono::milliseconds(delta_ms_duration.count()));
 		}
 
 		timePointB = std::chrono::system_clock::now();
-		std::chrono::duration<double, std::milli> const sleep_time = timePointB - timePointA;
+		std::chrono::duration<double, std::milli> sleep_time = timePointB - timePointA;
 		// END OF FPS LIMITER CODE ///////////////////////////////////
 
 		if (!isPaused)
@@ -146,7 +152,7 @@ void main()
 				if (sphere->GetX() < maxX)
 				{
 					// Rotate and move towards maxX.
-					sphere->RotateZ(-moveSpeed * speedMultiplier);
+					sphere->RotateZ(-rotationSpeed * speedMultiplier);
 					sphere->MoveX(moveSpeed);
 				}
 				else
@@ -162,7 +168,7 @@ void main()
 				if (sphere->GetX() > minX)
 				{
 					// Rotate and move towards minX.
-					sphere->RotateZ(moveSpeed * speedMultiplier);
+					sphere->RotateZ(rotationSpeed * speedMultiplier);
 					sphere->MoveX(-moveSpeed);
 				}
 				else
