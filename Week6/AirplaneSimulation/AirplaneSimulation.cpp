@@ -16,22 +16,28 @@ const double frameTime = milliseconds / desiredFPS;
 // END OF FPS LIMITER CONSTANTS
 
 // Create some constants
-const float moveSpeed = 0.15;
-const float acceleration = 0.001;
-const int initialSpeedMultiplier = 480;
-const float speedMultiplier = initialSpeedMultiplier / desiredFPS;
+const float gravity = 9.81; // Used when calculating speed of descent.
+const float moveSpeed = 0.15; // Used when rotating or moving objects.
+const float acceleration = 0.005; // Used when accelerating or decelerating
+const int initialSpeedMultiplier = 240;
+const float maxSpeed = 10.0; // Declare plane's max speed
+const float takeoffSpeed = 5.0; // Declare at what speed the plane will take off.
+const float speedMultiplier = initialSpeedMultiplier / desiredFPS; // To keep the movement consistent across machines, get the multiplier based on device refresh rate.
 
 // Create global variable for plane speed.
 float planeSpeed = 0.0;
 
 // Function to move object with WASDQEZX keys.
-void ControlObject(I3DEngine* myEngine, IModel* object)
+void ControlObject(I3DEngine* myEngine, IModel* object, ISceneNode* propeller)
 {
 	// The movement is relative.
 	if (myEngine->KeyHeld(Key_W))
 	{
-		// Increase object speed.
-		planeSpeed += acceleration * speedMultiplier;
+		if (planeSpeed < maxSpeed)
+		{
+			// Increase object speed.
+			planeSpeed += acceleration * speedMultiplier;
+		}		
 	}
 	if (myEngine->KeyHeld(Key_S))
 	{
@@ -40,33 +46,56 @@ void ControlObject(I3DEngine* myEngine, IModel* object)
 		{
 			planeSpeed -= acceleration * speedMultiplier;
 		}
+		else
+		{
+			planeSpeed = 0;
+		}
 	}
-	if (myEngine->KeyHeld(Key_A))
+	if (myEngine->KeyHeld(Key_Left))
 	{
 		// Rotate object left.
-		object->RotateLocalY(-moveSpeed * speedMultiplier);
+		object->RotateLocalZ(moveSpeed * speedMultiplier);
 	}
-	if (myEngine->KeyHeld(Key_D))
+	if (myEngine->KeyHeld(Key_Right))
 	{
 		// Rotate object right.
-		object->RotateLocalY(moveSpeed * speedMultiplier);
+		object->RotateLocalZ(-moveSpeed * speedMultiplier);
 	}
-	if (myEngine->KeyHeld(Key_Q))
+	if (myEngine->KeyHeld(Key_Up))
 	{
 		// Rotate object up.
-		object->RotateLocalX(moveSpeed * speedMultiplier);
-	}
-	if (myEngine->KeyHeld(Key_E))
-	{
-		// Rotate object down.
 		object->RotateLocalX(-moveSpeed * speedMultiplier);
 	}
-}
+	if (myEngine->KeyHeld(Key_Down))
+	{
+		// Rotate object down.
+		object->RotateLocalX(moveSpeed * speedMultiplier);
+	}
+	// Move the object forward if it is faster than takeoffSpeed, else go in a straight line.
+	if (planeSpeed >= takeoffSpeed)
+	{
+		// Move object forward (relative).
+		object->MoveLocalZ(planeSpeed * (speedMultiplier / desiredFPS * 1.25));
+	}
+	else
+	{
+		// Move object forward (relative), and if plane is above the ground, descend based on current speed. 
+		object->MoveLocalZ(planeSpeed * (speedMultiplier / desiredFPS * 1.25));
+		if (object->GetY() > 0)
+		{
+			object->MoveY(-gravity * 1/(planeSpeed * speedMultiplier * speedMultiplier));
+			if (object->GetY() < 0)
+			{
+				object->SetY(0);
+			}
+		}
+	}
 
-// Move the object based on the speed.
-void MoveObject(I3DEngine* myEngine, IModel* airplane)
-{
-	airplane->MoveLocalZ(planeSpeed);
+	// Rotate propeller based on plane speed, with a minimum rotation speed.
+	if (planeSpeed > 0)
+	{
+		propeller->RotateLocalZ(moveSpeed * planeSpeed * speedMultiplier * speedMultiplier + planeSpeed);
+	}
 }
 
 // Entry point of the program.
@@ -87,19 +116,33 @@ void main()
 	IFont* myFont = myEngine->LoadFont("Comic Sans MS", 36);
 	
 	// Create mesh and model objects
-	IMesh* airplaneMesh = myEngine->LoadMesh("Arrow.x"); // Change to airplane when I get the mesh.
-	IMesh* gridMesh = myEngine->LoadMesh("Grid.x");
+	IMesh* airplaneMesh = myEngine->LoadMesh("sopwith-camel.x");
+	IMesh* floorMesh = myEngine->LoadMesh("Floor.x");
 
 	// Create model from mesh
-	IModel* airplaneModel = airplaneMesh->CreateModel(0, 10, 0);
-	IModel* grid = gridMesh->CreateModel();
+	const float groundOffset = -1.05;
+	IModel* airplaneModel = airplaneMesh->CreateModel();
+	IModel* floorModel = floorMesh->CreateModel(0, groundOffset, 0);
+	const int rotationOffset = -15;
+	airplaneModel->RotateLocalX(rotationOffset);
 
-	// Create camera and attach to arrow.
+	// Get propeller node from plane.
+	ISceneNode* propellerNode = airplaneModel->GetNode(4);
+
+	// Change ground texture.
+	floorModel->SetSkin("ground_01.jpg");
+
+	// Create camera and attach to plane.
 	ICamera* myCamera = myEngine->CreateCamera(kManual);
 	myCamera->AttachToParent(airplaneModel);
+	const float cameraPlaneOffset[] = { 0.0, -8.0, 14.0 };
+	myCamera->MoveLocal(cameraPlaneOffset[0], cameraPlaneOffset[1], cameraPlaneOffset[2]);
 
 	// Define is the game paused.
 	bool isPaused = false;
+
+	// Define current camera view
+	string currentCameraView = "plane";
 
 	// Define is mouse captured by engine and capture the mouse immediately.
 	bool isMouseCaptured = true;
@@ -145,7 +188,7 @@ void main()
 			myFont->Draw(to_string(totalFrames), 110, 0);
 			// Print the plane's speed on screen.
 			myFont->Draw("Speed:", 0, 50);
-			myFont->Draw(to_string(planeSpeed), 110, 50);
+			myFont->Draw(to_string(planeSpeed).substr(0, 4), 110, 50); // Limit the displayed value to 1 decimal place.
 
 			/**** Update your scene each frame here ****/
 
@@ -174,8 +217,7 @@ void main()
 				isMouseCaptured = !isMouseCaptured;
 			}
 			// Move the object with keyboard.
-			ControlObject(myEngine, airplaneModel);
-			MoveObject(myEngine, airplaneModel);
+			ControlObject(myEngine, airplaneModel, propellerNode);
 		}
 		else
 		{
@@ -188,7 +230,6 @@ void main()
 				isPaused = !isPaused;
 			}
 		}
-
 	}
 
 	// Delete the 3D engine now we are finished with it
