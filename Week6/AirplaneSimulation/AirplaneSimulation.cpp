@@ -129,7 +129,7 @@ void main()
 	const int rotationOffset = -15;
 	airplaneModel->RotateLocalX(rotationOffset);
 	const int skyboxOffset = -940;
-	IModel* skyboxModel = skyboxMesh->CreateModel(0, skyboxOffset, 0);
+	const IModel* skyboxModel = skyboxMesh->CreateModel(0, skyboxOffset, 0);
 
 	// Get propeller node from plane.
 	ISceneNode* propellerNode = airplaneModel->GetNode(4);

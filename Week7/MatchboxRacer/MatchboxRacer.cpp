@@ -33,6 +33,25 @@ void main()
 	// Load "Comic Sans MS" font at 36 points
 	IFont* myFont = myEngine->LoadFont("Comic Sans MS", 36);
 
+	// Create mesh and model objects.
+	IMesh* matchboxMesh = myEngine->LoadMesh("Matchbox.x");
+	IModel* matchboxModel = matchboxMesh->CreateModel(); // XYZ = { 35, 15, 27 };
+	IMesh* floorMesh = myEngine->LoadMesh("Floor.x");
+	IModel* floorModel = floorMesh->CreateModel();
+
+	// Declare matchbox measurements
+	const float matchboxDimensions[] = { 35.0, 15.0, 27.0 };
+	const float matchboxWidth = 35.0;
+	const float matchboxHeight = 15.0;
+	const float matchboxLength = 27.0;	
+
+	// Create camera and attatch to parent
+	ICamera* myCamera = myEngine->CreateCamera(kManual);
+	myCamera->AttachToParent(matchboxModel);
+	myCamera->MoveLocal(0, 40, -60);
+	// Make camera point at parent at an angle.
+	myCamera->RotateLocalX(25);
+
 	// Define is the game paused
 	bool isPaused = false;
 
@@ -72,18 +91,50 @@ void main()
 			// Increment totalFrames
 			totalFrames++;
 			//Print totalFrames on screen.
-			myFont->Draw("Frames:", 0, 0);
-			myFont->Draw(to_string(totalFrames), 110, 0);
-			// Print the plane's speed on screen.
+			myFont->Draw("Frames: " + to_string(totalFrames), 0, 0);
+
+			/**** Update your scene each frame here ****/
+
+			if (myEngine->AnyKeyHit())
+			{
+				// Control keyboard input.
+				// Exit game.
+				if (myEngine->KeyHit(Key_Escape))
+				{
+					myEngine->Stop();
+				}
+				// Toggle isPaused.
+				if (myEngine->KeyHit(Key_P))
+				{
+					isPaused = !isPaused;
+				}
+				// Toggle mouse capture.
+				if (myEngine->KeyHit(Key_Tab))
+				{
+					if (isMouseCaptured)
+					{
+						myEngine->StopMouseCapture();
+					}
+					else
+					{
+						myEngine->StartMouseCapture();
+					}
+					isMouseCaptured = !isMouseCaptured;
+				}
+			}
+			// Control the matchbox car here.
 		}
 		else
 		{
-
+			// Toggle isPaused.
+			if (myEngine->KeyHit(Key_P))
+			{
+				// To prevent the camera from moving when resuming game, call GetMouseMovementX/Y()
+				myEngine->GetMouseMovementX();
+				myEngine->GetMouseMovementY();
+				isPaused = !isPaused;
+			}
 		}
-		
-
-		/**** Update your scene each frame here ****/
-
 	}
 
 	// Delete the 3D engine now we are finished with it
