@@ -4,21 +4,24 @@ This will store all my lab exercises for this university course.
 # Project List
 The following list is in descending order of completion; most recent projects are at the bottom.
 ## Week 1
-<a href="Week1/Intro">Intro</a>.
+<a href="Week1/Intro">Intro</a>
 
 ## Week 2
-<a href="Week2/InputAndControl">InputAndControl</a>.
+<a href="Week2/InputAndControl">InputAndControl</a>
 
 ## Week 3
-<a href="Week3/MouseControl">MouseControl</a>.
+<a href="Week3/MouseControl">MouseControl</a>
 
-<a href="Week3/Camerawork">Camerawork</a>.
+<a href="Week3/Camerawork">Camerawork</a>
 
 ## Week 4
-<a href="Week4/TextureManipulation">TextureManipulation</a>. --This project includes functional VSync code!
+<a href="Week4/TextureManipulation">TextureManipulation</a> --This project includes functional VSync code!
 
 ## Week 6
-<a href="Week6/AirplaneSimulation">AirplaneSimulation</a>.
+<a href="Week6/AirplaneSimulation">AirplaneSimulation</a>
+
+## Week 7
+<a href="Week7/MatchboxRacer">MatchboxRacer</a>
 
 # How to compile?
 After cloning a project, change "myEngine->AddMediaFolder( "C:\\Programs\\TL-Engine\\Media" );" to a path that reflects your TLEngine installation folder.
