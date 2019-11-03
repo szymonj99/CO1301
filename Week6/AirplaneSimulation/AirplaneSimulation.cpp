@@ -84,11 +84,13 @@ void ControlObject(I3DEngine* myEngine, IModel* object, ISceneNode* propeller)
 		if (object->GetY() > 0)
 		{
 			object->MoveY(-gravity * 1/(planeSpeed * speedMultiplier * speedMultiplier));
-			if (object->GetY() < 0)
-			{
-				object->SetY(0);
-			}
 		}
+	}
+
+	// Add colliision to ground level.
+	if (object->GetY() < 0)
+	{
+		object->SetY(0);
 	}
 
 	// Rotate propeller based on plane speed, with a minimum rotation speed.
@@ -118,6 +120,7 @@ void main()
 	// Create mesh and model objects
 	IMesh* airplaneMesh = myEngine->LoadMesh("sopwith-camel.x");
 	IMesh* floorMesh = myEngine->LoadMesh("Floor.x");
+	IMesh* skyboxMesh = myEngine->LoadMesh("Skybox 01.x");
 
 	// Create model from mesh
 	const float groundOffset = -1.05;
@@ -125,6 +128,8 @@ void main()
 	IModel* floorModel = floorMesh->CreateModel(0, groundOffset, 0);
 	const int rotationOffset = -15;
 	airplaneModel->RotateLocalX(rotationOffset);
+	const int skyboxOffset = -940;
+	IModel* skyboxModel = skyboxMesh->CreateModel(0, skyboxOffset, 0);
 
 	// Get propeller node from plane.
 	ISceneNode* propellerNode = airplaneModel->GetNode(4);

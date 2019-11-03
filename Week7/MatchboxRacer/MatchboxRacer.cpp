@@ -30,12 +30,25 @@ void main()
 
 	/**** Set up your scene here ****/
 
+	// Load "Comic Sans MS" font at 36 points
+	IFont* myFont = myEngine->LoadFont("Comic Sans MS", 36);
+
+	// Define is the game paused
+	bool isPaused = false;
+
+	// Define is mouse captured by engine and capture the mouse immediately.
+	bool isMouseCaptured = true;
+	myEngine->StartMouseCapture();
+
+	// Define amount of frames since engine started.
+	int totalFrames = 0;
+
 	// The main game loop, repeat until engine is stopped
 	while (myEngine->IsRunning())
 	{
 		// START OF FPS LIMITER CODE ///////////////////////////////////
 		// Set the timePointA to the time right now
-			timePointA = std::chrono::system_clock::now();
+		timePointA = std::chrono::system_clock::now();
 		// Create a work_time double of type duration, measured in milliseconds (double data type), and set it to the time difference between timePointA and timePointB.
 		std::chrono::duration<double, std::milli> const work_time = timePointA - timePointB;
 
@@ -51,8 +64,23 @@ void main()
 		std::chrono::duration<double, std::milli> const sleep_time = timePointB - timePointA;
 		// END OF FPS LIMITER CODE ///////////////////////////////////
 
-		// Draw the scene
-		myEngine->DrawScene();
+		if (!isPaused)
+		{
+			// Draw the scene
+			myEngine->DrawScene();
+
+			// Increment totalFrames
+			totalFrames++;
+			//Print totalFrames on screen.
+			myFont->Draw("Frames:", 0, 0);
+			myFont->Draw(to_string(totalFrames), 110, 0);
+			// Print the plane's speed on screen.
+		}
+		else
+		{
+
+		}
+		
 
 		/**** Update your scene each frame here ****/
 
