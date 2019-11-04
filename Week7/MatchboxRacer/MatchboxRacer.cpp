@@ -35,9 +35,16 @@ void main()
 
 	// Create mesh and model objects.
 	IMesh* matchboxMesh = myEngine->LoadMesh("Matchbox.x");
-	IModel* matchboxModel = matchboxMesh->CreateModel(); // XYZ = { 35, 15, 27 };
+	IModel* matchboxModel = matchboxMesh->CreateModel(0, 5, 0); // XYZ = { 35, 15, 27 };
 	IMesh* floorMesh = myEngine->LoadMesh("Floor.x");
 	IModel* floorModel = floorMesh->CreateModel();
+
+	// Create front axle
+	IMesh* frontAxleMesh = myEngine->LoadMesh("Match.x");
+	IModel* fronstAxleModel = frontAxleMesh->CreateModel(0, 5, 8);
+
+	// Create back axle
+	IModel* backAxleModel = frontAxleMesh->CreateModel(0, 5, -8);
 
 	// Declare matchbox measurements
 	const float matchboxDimensions[] = { 35.0, 15.0, 27.0 };
@@ -46,9 +53,9 @@ void main()
 	const float matchboxLength = 27.0;	
 
 	// Create camera and attatch to parent
-	ICamera* myCamera = myEngine->CreateCamera(kManual);
-	myCamera->AttachToParent(matchboxModel);
-	myCamera->MoveLocal(0, 40, -60);
+	ICamera* myCamera = myEngine->CreateCamera(kFPS);
+	//myCamera->AttachToParent(matchboxModel);
+	//myCamera->MoveLocal(0, 40, -60);
 	// Make camera point at parent at an angle.
 	myCamera->RotateLocalX(25);
 
@@ -133,6 +140,11 @@ void main()
 				myEngine->GetMouseMovementX();
 				myEngine->GetMouseMovementY();
 				isPaused = !isPaused;
+			}
+			// Exit game.
+			if (myEngine->KeyHit(Key_Escape))
+			{
+				myEngine->Stop();
 			}
 		}
 	}
