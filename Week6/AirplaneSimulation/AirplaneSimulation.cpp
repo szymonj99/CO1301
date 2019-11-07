@@ -415,8 +415,7 @@ void main()
 					myEngine->StartMouseCapture();
 				}
 				isMouseCaptured = !isMouseCaptured;
-			}
-			
+			}			
 		}
 	}
 

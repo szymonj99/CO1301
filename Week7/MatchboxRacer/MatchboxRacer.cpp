@@ -5,6 +5,7 @@
 #include <cstdio> // Used to limit the engine to X FPS
 #include <chrono> // Used to limit the engine to X FPS
 #include <thread> // Used to limit the engine to X FPS
+#define _USE_MATH_DEFINES // Used to get constant pi.
 #include <math.h> // Used to round numbers up for FPS limiting.
 #include <Windows.h> // Used to get device refresh rate.
 using namespace tle;
@@ -15,10 +16,171 @@ const double milliseconds = 1000.0;
 const double frameTime = milliseconds / desiredFPS;
 // END OF FPS LIMITER CONSTANTS
 
+// The constant that ensures proper physics functions on all refresh rates.
+const float speedMultiplier = 1 / desiredFPS;
+
+// Create a 3D engine (using TLX engine here).
+I3DEngine* myEngine = New3DEngine(kTLX);
+
+// Create enum that stores the axle that is currently being created in the car object.
+const enum currentAxle {front, back};
+
+// Class storing all of the matchbox car's components
+class MatchboxCar
+{
+public:
+	// The car's body.
+	IModel* mainBody;
+	// The car's front axle.
+	IModel* frontAxle;
+	// The car's back axle.
+	IModel* backAxle;
+	// The car's front right wheel.
+	IModel* frontRightWheel;
+	// The car's front left wheel.
+	IModel* frontLeftWheel;
+	// The car's back right wheel.
+	IModel* backRightWheel;
+	// The car's back left wheel.
+	IModel* backLeftWheel;
+	// The car's steering wheel rotation in the Y axis.
+	float steeringPosition;
+	// The car's maximum steering wheel rotation.
+	float steeringPositionMax;
+	// The car's acceleration ms^2.
+	float acceleration;
+	// The multiplier by which to multiply velocity to make the car go quicker.
+	float velocityMultiplier;
+	// The car's current forward velocity.
+	float velocity;
+	// The car's maximum forward velocity.
+	float velocityMax;
+	// How much to rotate the car's components each frame.
+	float rotation;
+
+	// Create the car's main body.
+	void CreateBody(IMesh* matchboxMesh)
+	{
+		// The offset in the Y axis allowing for wheels to properly touch the ground when created.
+		int carHeightOffset = 13;
+		mainBody = matchboxMesh->CreateModel(0, carHeightOffset, 0);
+	}
+
+	// Create the car's axle, along with wheels that are attached to main body (parent).
+	void CreateAxleAndWheels(IMesh* axleMesh, IMesh* wheelMesh, currentAxle currentAxle)
+	{
+		// The axle's offset from the middle of the car to where it should be placed.
+		const int axleOffset[3] = { 0, 0, 20 };
+		// The wheel's offset from the middle of the car to where it should be placed.
+		const int wheelOffset[3] = { 23, 0, axleOffset[2] };
+		if (currentAxle == front)
+		{
+			// Create the axle and attach to parent.
+			frontAxle = axleMesh->CreateModel(axleOffset[0], axleOffset[1], axleOffset[2]);
+			frontAxle->AttachToParent(mainBody);
+
+			// Create the wheels and attach to parent.
+			frontRightWheel = wheelMesh->CreateModel(wheelOffset[0], wheelOffset[1], 0);
+			frontRightWheel->AttachToParent(frontAxle);
+			frontLeftWheel = wheelMesh->CreateModel(-wheelOffset[0], wheelOffset[1], 0);
+			frontLeftWheel->AttachToParent(frontAxle);
+		}
+		else
+		{
+			// Create the axle and attach to parent.
+			backAxle = axleMesh->CreateModel(axleOffset[0], axleOffset[1], -axleOffset[2]);
+			backAxle->AttachToParent(mainBody);
+
+			// Create the wheels and attach to parent.
+			backRightWheel = wheelMesh->CreateModel(wheelOffset[0], wheelOffset[1], 0);
+			backRightWheel->AttachToParent(backAxle);
+			backLeftWheel = wheelMesh->CreateModel(-wheelOffset[0], wheelOffset[1], 0);
+			backLeftWheel->AttachToParent(backAxle);
+		}
+	}
+
+	// Change the car's velocity by value.
+	void ChangeVelocity(float velocityToChange)
+	{
+		velocity += velocityToChange;
+	}
+
+	// Change the car's steering.
+	void ChangeSteering(float steeringToChange)
+	{
+		steeringPosition += steeringToChange;
+		UpdateAxleRotation(steeringToChange);
+	}
+
+	// Update the car's front axle to reflect steering.
+	void UpdateAxleRotation(float rotationChange)
+	{
+		frontAxle->RotateY(rotationChange);
+	}
+
+	// Control the car's variables with keyboard input.
+	void ControlCar(I3DEngine* engine = myEngine)
+	{
+		// The movement is relative.
+		if (engine->KeyHeld(Key_W))
+		{
+			if (velocity < velocityMax)
+			{
+				// Increase velocity.
+				ChangeVelocity(acceleration * speedMultiplier);
+			}
+		}
+		if (myEngine->KeyHeld(Key_S))
+		{
+			if (velocity > -velocityMax)
+			{
+				// Accelerate in opposite direction.
+				ChangeVelocity(-acceleration * speedMultiplier);
+			}
+		}
+		if (myEngine->KeyHeld(Key_A))
+		{
+			if (steeringPosition > -steeringPositionMax)
+			{
+				// Increase steering left.
+				ChangeSteering(-acceleration * speedMultiplier);
+			}
+		}
+		if (myEngine->KeyHeld(Key_D))
+		{
+			if (steeringPosition < steeringPositionMax)
+			{
+				// Increase steering right.
+				ChangeSteering(acceleration * speedMultiplier);
+			}
+		}
+		if (velocity != 0)
+		{
+			// Rotate the axles forwards.
+			frontAxle->RotateLocalX(velocity * rotation);
+			backAxle->RotateLocalX(velocity * rotation);
+			// Move the car after all calculations are done.
+			mainBody->MoveLocalZ(velocity * velocityMultiplier * speedMultiplier);
+			if (steeringPosition != 0)
+			{
+				mainBody->RotateY(velocity * rotation * sin(steeringPosition * M_PI / 180));
+			}
+		}
+	}
+
+	// Create a camera that will follow the car.
+	void AttachCamera(ICamera* myCamera)
+	{
+		// Attach camera to parent, move by an offset, and rotate.
+		myCamera->AttachToParent(mainBody);
+		myCamera->MoveLocal(0, 60, -60);
+		myCamera->RotateLocalX(25);
+	}
+};
+
 void main()
 {
-	// Create a 3D engine (using TLX engine here) and open a window for it
-	I3DEngine* myEngine = New3DEngine( kTLX );
+	// Open a new window for the 3D engine.
 	myEngine->StartWindowed();
 
 	// Add default folder for meshes and other media
@@ -33,31 +195,31 @@ void main()
 	// Load "Comic Sans MS" font at 36 points
 	IFont* myFont = myEngine->LoadFont("Comic Sans MS", 36);
 
-	// Create mesh and model objects.
-	IMesh* matchboxMesh = myEngine->LoadMesh("Matchbox.x");
-	IModel* matchboxModel = matchboxMesh->CreateModel(0, 5, 0); // XYZ = { 35, 15, 27 };
+	// Create the matchbox car object.
+	MatchboxCar* matchboxCar = new MatchboxCar();
+
+	// Create the car body.
+	matchboxCar->CreateBody(myEngine->LoadMesh("Matchbox.x")); // The matchbox mesh will only be used once. No point in storing it in memory as a variable.
+	
+	// Create the front and back axle and wheels of the car, attached to parent.
+	IMesh* carAxle = myEngine->LoadMesh("Match.x");
+	IMesh* carWheel = myEngine->LoadMesh("TwoPence.x");
+	matchboxCar->CreateAxleAndWheels(carAxle, carWheel, front);
+	matchboxCar->CreateAxleAndWheels(carAxle, carWheel, back);	
+
+	// Define the car's variables.
+	matchboxCar->steeringPositionMax = 15.0;
+	matchboxCar->velocityMax = 15.0;
+	matchboxCar->acceleration = 5.0;
+	matchboxCar->velocityMultiplier = 7.5;
+	matchboxCar->rotation = speedMultiplier * matchboxCar->velocityMultiplier * M_PI;
+
+	// Create the floor.
 	IMesh* floorMesh = myEngine->LoadMesh("Floor.x");
-	IModel* floorModel = floorMesh->CreateModel();
-
-	// Create front axle
-	IMesh* frontAxleMesh = myEngine->LoadMesh("Match.x");
-	IModel* fronstAxleModel = frontAxleMesh->CreateModel(0, 5, 8);
-
-	// Create back axle
-	IModel* backAxleModel = frontAxleMesh->CreateModel(0, 5, -8);
-
-	// Declare matchbox measurements
-	const float matchboxDimensions[] = { 35.0, 15.0, 27.0 };
-	const float matchboxWidth = 35.0;
-	const float matchboxHeight = 15.0;
-	const float matchboxLength = 27.0;	
+	const IModel* floorModel = floorMesh->CreateModel();
 
 	// Create camera and attatch to parent
-	ICamera* myCamera = myEngine->CreateCamera(kFPS);
-	//myCamera->AttachToParent(matchboxModel);
-	//myCamera->MoveLocal(0, 40, -60);
-	// Make camera point at parent at an angle.
-	myCamera->RotateLocalX(25);
+	matchboxCar->AttachCamera(myEngine->CreateCamera(kManual));
 
 	// Define is the game paused
 	bool isPaused = false;
@@ -92,13 +254,10 @@ void main()
 
 		if (!isPaused)
 		{
+			
+
 			// Draw the scene
 			myEngine->DrawScene();
-
-			// Increment totalFrames
-			totalFrames++;
-			//Print totalFrames on screen.
-			myFont->Draw("Frames: " + to_string(totalFrames), 0, 0);
 
 			/**** Update your scene each frame here ****/
 
@@ -130,21 +289,43 @@ void main()
 				}
 			}
 			// Control the matchbox car here.
+			matchboxCar->ControlCar();
+
+
+			// Increment totalFrames
+			totalFrames++;
+			// Print info on screen.
+			myFont->Draw("Total Frames: " + to_string(totalFrames), 0, 0);
+			myFont->Draw("Velocity: " + to_string(matchboxCar->velocity), 0, 50);
+			myFont->Draw("Steering: " + to_string(matchboxCar->steeringPosition), 0, 100);
 		}
 		else
 		{
-			// Toggle isPaused.
-			if (myEngine->KeyHit(Key_P))
+			if (myEngine->AnyKeyHit())
 			{
-				// To prevent the camera from moving when resuming game, call GetMouseMovementX/Y()
-				myEngine->GetMouseMovementX();
-				myEngine->GetMouseMovementY();
-				isPaused = !isPaused;
-			}
-			// Exit game.
-			if (myEngine->KeyHit(Key_Escape))
-			{
-				myEngine->Stop();
+				// Toggle isPaused.
+				if (myEngine->KeyHit(Key_P))
+				{
+					isPaused = !isPaused;
+				}
+				// Exit game.
+				if (myEngine->KeyHit(Key_Escape))
+				{
+					myEngine->Stop();
+				}
+				// Toggle mouse capture.
+				if (myEngine->KeyHit(Key_Tab))
+				{
+					if (isMouseCaptured)
+					{
+						myEngine->StopMouseCapture();
+					}
+					else
+					{
+						myEngine->StartMouseCapture();
+					}
+					isMouseCaptured = !isMouseCaptured;
+				}
 			}
 		}
 	}
