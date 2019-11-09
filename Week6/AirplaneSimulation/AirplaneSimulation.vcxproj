@@ -126,9 +126,14 @@ copy "C:\Programs\TL-Engine\3rd Party\TL-Xtreme\shader\*.*" "$(OutDir)" &gt; NUL
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="AirplaneSimulation.cpp" />
+    <ClCompile Include="IAirplane.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="TLEngine Readme.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="IAirplane.h" />
+    <ClInclude Include="MyConstants.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
