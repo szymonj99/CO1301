@@ -23,6 +23,9 @@ The following list is in descending order of completion; most recent projects ar
 ## Week 7
 <a href="Week7/MatchboxRacer">MatchboxRacer</a>
 
+## Week 8
+<a href="Week8/GameStates">GameStates</a>
+
 # How to compile?
 After cloning a project, change "myEngine->AddMediaFolder( "C:\\Programs\\TL-Engine\\Media" );" to a path that reflects your TLEngine installation folder.
 Open the solution in Visual Studio 2019, and build.
