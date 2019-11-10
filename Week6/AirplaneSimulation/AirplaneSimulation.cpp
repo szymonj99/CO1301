@@ -161,6 +161,7 @@ void UpdateHUD(IFont* myFont, IAirplane* airplane, int totalFrames)
 	myFont->Draw("Lift Force: " + to_string(static_cast<int>(airplane->GetUpwardsLift())), 0, 360);
 	myFont->Draw("Down Force: " + to_string(static_cast<int>(airplane->GetDownwardsLift())), 0, 400);
 	myFont->Draw("Resultant Lift: " + to_string(static_cast<int>(airplane->GetResultantLift())), 0, 440);
+	myFont->Draw("Desired FPS: " + to_string(static_cast<int>(desiredFPS)), 0, 480);
 }
 
 // Entry point of the program.
