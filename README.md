@@ -15,7 +15,7 @@ The following list is in descending order of completion; most recent projects ar
 <a href="Week3/Camerawork">Camerawork</a>
 
 ## Week 4
-<a href="Week4/TextureManipulation">TextureManipulation</a> --This project includes functional VSync code!
+<a href="Week4/TextureManipulation">TextureManipulation</a>
 
 ## Week 6
 <a href="Week6/AirplaneSimulation">AirplaneSimulation</a>
